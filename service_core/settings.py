@@ -75,25 +75,18 @@ DATABASES = {
 
 
 # Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+from password_strength import PasswordPolicy
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+PASSWORD_POLICY = PasswordPolicy.from_names(
+    length=12,  # min length: 12
+    uppercase=1,  # need min. 1 uppercase
+    numbers=1,  # need min. 1 number
+    special=1,  # need min. 1 special character
+    strength=(0.33, 30),  # min. 0.33 strength
+)
 
 
-# Internationalization
+# Internationali  zation
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'

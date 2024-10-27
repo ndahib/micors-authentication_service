@@ -7,7 +7,6 @@ from django.utils.text import slugify
 from rest_framework import serializers
 from authentication_app.models import CustomUser
 
-
 ######################################Sign Up Serializer########################################
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -58,7 +57,6 @@ class EmailVerificationSerializer(serializers.Serializer):
             payload = jwt.decode(
                 token, os.environ["VERIFICATION_EMAIL_JWT_SECRET"], algorithms=["HS256"]
             )
-            print("===>", payload)
             if (
                 payload["action"] != self.EXPECTED_ACTION
                 or payload["redirecType"] != self.EXPECTED_REDIRECT_TYPE
@@ -67,12 +65,10 @@ class EmailVerificationSerializer(serializers.Serializer):
                 or payload["exp"] < datetime.now().timestamp()
                 or redirect_url != os.environ["WELCOME_FRONTEND_URL"]
             ):
-                print("enter here")
                 raise serializers.ValidationError("Verification link is invalid or expired.")
             email = payload["sub"]
             if CustomUser.objects.filter(email=email).exists():
                 if CustomUser.objects.get(email=email).is_verified:
-                    print("enter here 2")
                     raise serializers.ValidationError(
                         "Verification link is invalid or expired."
                     )
@@ -94,33 +90,38 @@ class EmailVerificationSerializer(serializers.Serializer):
         user.save()
         return user
 
-
-######################## Complet Profile Serializer #########################################
-class CompleteProfileSerializer(serializers.Serializer):
-    password = serializers.CharField(max_length=255, min_length=8, write_only=True, required=True)
+from service_core.settings import PASSWORD_POLICY
+######################## Complet Profile Serializer #########################################       
+class CompleteProfileSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True, required=True)
 
     class Meta:
-        model = CustomUser
-        fields = ['email', 'username', 'password']
-    
+        model = CustomUser 
+        fields = ['username', 'password', 'email']
+
     def validate(self, attrs):
-        # check if password in strong 
+        token = self.context['request'].COOKIES.get("token")
+        email = Util.get_email_from_token(token)
+
+        if email is None:
+            raise serializers.ValidationError("Invalid token.")
         password = attrs.get('password')
-        if len(password) < 8:
-            raise serializers.ValidationError("Password must be at least 8 characters long.")
-        if r'[^A-Za-z0-9]' not in password:
-            raise serializers.ValidationError("Password must contain at least one digit and one special character.")
-        if not any(char.isupper() for char in password):
-            raise serializers.ValidationError("Password must contain at least one uppercase letter.")
-        return super().validate(attrs)
+        try:
+            PASSWORD_POLICY.test(password)
+        except PASSWORD_POLICY.PasswordPolicyError as e:
+            raise serializers.ValidationError(e)
+        attrs['email'] = email
+        return attrs
 
     def create(self, validated_data):
-        user = CustomUser.objects.get(email=validated_data.get('email'))
-        user.set_password(validated_data.get('password'))
-        user.is_complete = True
-        user.username = validated_data.get('username')
+        user = self._get_user_by_email(validated_data['email'])
+        user.set_password(validated_data['password'])
+        user.username = validated_data['username']
         user.save()
         return user
-    
-        
-        
+
+    def _get_user_by_email(self, email: str) -> CustomUser:
+        try:
+            return CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError({'email': 'User with this email does not exist.'})

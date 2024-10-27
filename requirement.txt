@@ -13,6 +13,7 @@ djangorestframework-simplejwt==5.3.1
 hyperlink==21.0.0
 idna==3.10
 incremental==24.7.2
+password-strength==0.0.3.post2
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pycparser==2.22
@@ -20,6 +21,7 @@ PyJWT==2.9.0
 pyOpenSSL==24.2.1
 python-dotenv==1.0.1
 service-identity==24.1.0
+six==1.16.0
 sqlparse==0.5.1
 tomli==2.0.2
 Twisted==24.7.0

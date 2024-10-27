@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.core.mail import EmailMessage
 from django.contrib.sites.shortcuts import get_current_site
 from datetime import datetime, timedelta
+from rest_framework_simplejwt.tokens import AccessToken
 
 class Util:
     @staticmethod
@@ -26,6 +27,7 @@ class Util:
         relativeLink = reverse("email-verify")
         port = ":"+str(request.META.get('SERVER_PORT'))
         redirectUrl = os.environ.get("WELCOME_FRONTEND_URL")
+        print("---------->>", redirectUrl)
         absoluteLink = "http://"+current_site.domain+port+relativeLink+"?token="+str(token)+"&continuue="+redirectUrl  #tochange later to HTTPS
         email_body = "Hi, Use link below to verify your email \n"+absoluteLink
         email = {
@@ -49,6 +51,22 @@ class Util:
         token = Util.generate_token(payload=payload)
         email_data = Util.create_email_data(request, email, token)
         Util.send_email(data=email_data)
+    
+    @staticmethod
+    def get_email_from_token(token):
+        print("token------------------------------------------->>><<<<>>>>>>>", token)
+        access_token = AccessToken(token)
+        access_token.verify()
+        payload = access_token.payload
+        print("------->>", payload)
+        if (payload["scope"] != "welcome" 
+        or payload["iss"] != "micros/sign-in" 
+        or payload["redirectType"] != "signup"):
+            raise Exception("Invalid token")
+        return access_token.__getitem__("sub")
+
+
+
     
 
 
