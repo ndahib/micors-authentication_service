@@ -26,13 +26,14 @@ class Util:
         relativeLink = reverse("email-verify")
         port = ":"+str(request.META.get('SERVER_PORT'))
         redirectUrl = os.environ.get("WELCOME_FRONTEND_URL")
-        absoluteLink = "http://"+current_site.domain+port+relativeLink+"?token="+str(token)+"&continue="+redirectUrl  #tochange later to HTTPS
+        absoluteLink = "http://"+current_site.domain+port+relativeLink+"?token="+str(token)+"&continuue="+redirectUrl  #tochange later to HTTPS
         email_body = "Hi, Use link below to verify your email \n"+absoluteLink
         email = {
             "email_body": email_body,
             "email_subject": "Verify your email",
             "to_email": email          
         }
+        print(email)
         return email
 
     @staticmethod

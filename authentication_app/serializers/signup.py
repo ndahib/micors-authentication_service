@@ -32,66 +32,67 @@ class SignUpSerializer(serializers.Serializer):
 
 ######################################Email Verification Serializer################################
 class EmailVerificationSerializer(serializers.Serializer):
-    token = serializers.CharField(max_length=255)
-    url = serializers.CharField(max_length=255)
-    email = serializers.EmailField()
-
-    class Meta:
-        model = CustomUser
-        fields = ['email']
-    
+    token = serializers.CharField(max_length=500)
+    continuue = serializers.CharField()
 
     EXPECTED_ACTION = "verify-email"
     EXPECTED_REDIRECT_TYPE = "signup"
     EXPECTED_SCOPE = "verifyEmailLink"
     EXPECTED_ISSUER = "micros/auth_verify_email"
-    
+
     @staticmethod
-    def _generate_username(email):
-        """Generate username from name
-        """
+    def generate_username(email):
+        """Generate username from name"""
         username = slugify(email)
         unique_suffix = str(random.randint(1000, 9999))
-        username = username + unique_suffix
+        username = f"{username}{unique_suffix}"
         if not CustomUser.objects.filter(username=username).exists():
             return username
-        else:
-            return EmailVerificationSerializer._generate_username(username)
+        return EmailVerificationSerializer.generate_username(username)
 
     def validate(self, attrs):
-        token = attrs.get('token')
-        url = attrs.get('continue')
+        token = attrs["token"]
+        redirect_url = attrs["continuue"]
 
         try:
-            payload = jwt.decode(token, os.environ.get("VERIFICATION_EMAIL_JWT_SECRET"), algorithms=["HS256"])
-            
-            if (payload['action'] != self.EXPECTED_ACTION or
-                payload['redirecType'] != self.EXPECTED_REDIRECT_TYPE or
-                payload['scope'] != self.EXPECTED_SCOPE or
-                payload['iss'] != self.EXPECTED_ISSUER or
-                payload['exp'] < datetime.now().timestamp() or
-                url != f"{os.environ.get('VERIFICATION_EMAIL_LINK')}?token={token}"):
+            payload = jwt.decode(
+                token, os.environ["VERIFICATION_EMAIL_JWT_SECRET"], algorithms=["HS256"]
+            )
+            print("===>", payload)
+            if (
+                payload["action"] != self.EXPECTED_ACTION
+                or payload["redirecType"] != self.EXPECTED_REDIRECT_TYPE
+                or payload["scope"] != self.EXPECTED_SCOPE
+                or payload["iss"] != self.EXPECTED_ISSUER
+                or payload["exp"] < datetime.now().timestamp()
+                or redirect_url != os.environ["WELCOME_FRONTEND_URL"]
+            ):
+                print("enter here")
                 raise serializers.ValidationError("Verification link is invalid or expired.")
-        
+            email = payload["sub"]
+            if CustomUser.objects.filter(email=email).exists():
+                if CustomUser.objects.get(email=email).is_verified:
+                    print("enter here 2")
+                    raise serializers.ValidationError(
+                        "Verification link is invalid or expired."
+                    )
         except jwt.ExpiredSignatureError:
             raise serializers.ValidationError("Verification link expired.")
         except jwt.DecodeError:
             raise serializers.ValidationError("Verification link is invalid.")
         except jwt.InvalidTokenError:
             raise serializers.ValidationError("Verification link is invalid.")
-        
-        return super().validate(attrs)
-    
+
+        return super().validate({**attrs, "email": email})
 
     def create(self, validated_data):
-        email = validated_data.get('email')
-        username = self._generate_username(email)
-        is_complete = False
-        is_verified = True
-        return CustomUser.objects.create_user(username=username, 
-                                            email=email, 
-                                            is_complete=is_complete, 
-                                            is_verified=is_verified)
+        email = validated_data["email"]
+        username = self.generate_username(email)
+        user = CustomUser.objects.create_user(username, email)
+        user.is_complete = True
+        user.is_verified = True
+        user.save()
+        return user
 
 
 ######################## Complet Profile Serializer #########################################
