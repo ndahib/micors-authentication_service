@@ -51,7 +51,6 @@ class EmailVerificationSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         token = attrs.get("token")
-        print(token)
         try:
             payload = jwt.decode(
                 token, os.environ["VERIFICATION_EMAIL_JWT_SECRET"], algorithms=["HS256"]
@@ -72,7 +71,6 @@ class EmailVerificationSerializer(serializers.Serializer):
         except jwt.ExpiredSignatureError:
             raise serializers.ValidationError("Verification link expired.")
         except (jwt.DecodeError, jwt.InvalidTokenError) as e:
-            print(e)
             raise serializers.ValidationError("Verification link is invalid.")
 
         attrs["email"] = email

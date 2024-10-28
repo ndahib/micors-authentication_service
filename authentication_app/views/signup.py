@@ -72,4 +72,3 @@ class CompleteProfileView(APIView):
                             status=status.HTTP_200_OK)
         response.set_cookie("access", tokens["access"], httponly=True, secure=True, samesite="Lax")
         return response
-

@@ -56,6 +56,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
         refresh["exp"] = int((datetime.now() + timedelta(hours=1)).timestamp())
         refresh["iat"] = int(datetime.now().timestamp())
         refresh["nonce"] = secrets.token_hex(16)
+        refresh["scope"] = "login"
         return {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
