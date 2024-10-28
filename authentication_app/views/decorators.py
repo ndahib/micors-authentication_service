@@ -27,6 +27,9 @@ def check_is_complete(view_func):
 
     return _wrapped_view
 
+from functools import wraps
+from django.http import HttpResponseForbidden
+
 def is_verified(view_func):
     @wraps(view_func)
     def _wrapped_view(self, request, *args, **kwargs):
@@ -34,8 +37,8 @@ def is_verified(view_func):
         if not cookie:
             return HttpResponseForbidden("Access denied: no token provided.")
         try:
-            token = AccessToken.verify(cookie)
-            email = token['sub']
+            token = AccessToken(cookie, verify=True)
+            email = token.__getitem__('sub')
         except Exception:
             return HttpResponseForbidden("Access denied: invalid token provided.")
     

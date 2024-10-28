@@ -48,7 +48,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-    def token(self):
+    def tokens(self):
         refresh = RefreshToken.for_user(self)
         refresh["username"] = self.username
         refresh["iss"] = "team transcendance"

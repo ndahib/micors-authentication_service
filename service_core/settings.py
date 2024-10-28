@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     
-    'authentication_app.apps.AuthenticationAppConfig',
+    'authentication_app',
 ]
 
 REST_FRAMEWORK = {
@@ -47,7 +47,7 @@ ROOT_URLCONF = 'service_core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,10 +78,10 @@ DATABASES = {
 from password_strength import PasswordPolicy
 
 PASSWORD_POLICY = PasswordPolicy.from_names(
-    length=12,  # min length: 12
+    length=8,  # min length: 8
     uppercase=1,  # need min. 1 uppercase
     numbers=1,  # need min. 1 number
-    special=1,  # need min. 1 special character
+    special=0,  # need min. 1 special character
     strength=(0.33, 30),  # min. 0.33 strength
 )
 

@@ -6,7 +6,9 @@ from datetime import datetime
 from django.utils.text import slugify
 from rest_framework import serializers
 from authentication_app.models import CustomUser
-
+from service_core.settings import PASSWORD_POLICY
+from rest_framework_simplejwt.tokens import AccessToken
+from datetime import datetime, timedelta
 ######################################Sign Up Serializer########################################
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -32,7 +34,6 @@ class SignUpSerializer(serializers.Serializer):
 ######################################Email Verification Serializer################################
 class EmailVerificationSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=500)
-    continuue = serializers.CharField()
 
     EXPECTED_ACTION = "verify-email"
     EXPECTED_REDIRECT_TYPE = "signup"
@@ -40,76 +41,87 @@ class EmailVerificationSerializer(serializers.Serializer):
     EXPECTED_ISSUER = "micros/auth_verify_email"
 
     @staticmethod
-    def generate_username(email):
-        """Generate username from name"""
-        username = slugify(email)
+    def _generate_username(email):
+        base_username = slugify(email)
         unique_suffix = str(random.randint(1000, 9999))
-        username = f"{username}{unique_suffix}"
-        if not CustomUser.objects.filter(username=username).exists():
-            return username
-        return EmailVerificationSerializer.generate_username(username)
+        new_username = f"{base_username}{unique_suffix}"
+        if not CustomUser.objects.filter(username=new_username).exists():
+            return new_username
+        return EmailVerificationSerializer._generate_username(email)
 
     def validate(self, attrs):
-        token = attrs["token"]
-        redirect_url = attrs["continuue"]
-
+        token = attrs.get("token")
+        print(token)
         try:
             payload = jwt.decode(
                 token, os.environ["VERIFICATION_EMAIL_JWT_SECRET"], algorithms=["HS256"]
             )
             if (
-                payload["action"] != self.EXPECTED_ACTION
-                or payload["redirecType"] != self.EXPECTED_REDIRECT_TYPE
-                or payload["scope"] != self.EXPECTED_SCOPE
-                or payload["iss"] != self.EXPECTED_ISSUER
-                or payload["exp"] < datetime.now().timestamp()
-                or redirect_url != os.environ["WELCOME_FRONTEND_URL"]
+                payload.get("action") != self.EXPECTED_ACTION
+                or payload.get("redirecType") != self.EXPECTED_REDIRECT_TYPE
+                or payload.get("scope") != self.EXPECTED_SCOPE
+                or payload.get("iss") != self.EXPECTED_ISSUER
+                or payload.get("exp") < datetime.now().timestamp()
             ):
                 raise serializers.ValidationError("Verification link is invalid or expired.")
-            email = payload["sub"]
-            if CustomUser.objects.filter(email=email).exists():
-                if CustomUser.objects.get(email=email).is_verified:
-                    raise serializers.ValidationError(
-                        "Verification link is invalid or expired."
-                    )
+
+            email = payload.get("sub")
+            user = CustomUser.objects.filter(email=email).first()
+            if user and user.is_verified:
+                raise serializers.ValidationError("Verification link is invalid or expired.")
         except jwt.ExpiredSignatureError:
             raise serializers.ValidationError("Verification link expired.")
-        except jwt.DecodeError:
-            raise serializers.ValidationError("Verification link is invalid.")
-        except jwt.InvalidTokenError:
+        except (jwt.DecodeError, jwt.InvalidTokenError) as e:
+            print(e)
             raise serializers.ValidationError("Verification link is invalid.")
 
-        return super().validate({**attrs, "email": email})
+        attrs["email"] = email
+        return super().validate(attrs)
 
     def create(self, validated_data):
-        email = validated_data["email"]
-        username = self.generate_username(email)
-        user = CustomUser.objects.create_user(username, email)
+        email = validated_data.get("email")
+        username = self._generate_username(email)
+        user = CustomUser.objects.create_user(username=username, email=email)
         user.is_complete = True
         user.is_verified = True
         user.save()
-        return user
 
-from service_core.settings import PASSWORD_POLICY
+        access_token = AccessToken.for_user(user)
+        access_token['aud'] = "link-signature-validator"
+        access_token['sub'] = email
+        access_token['scope'] = "welcome"
+        access_token['iss'] = "micros/sign-in"
+        access_token['redirectType'] = "signup"
+        access_token.set_exp(lifetime=timedelta(hours=1))
+        
+        return user, access_token
+    
+
 ######################## Complet Profile Serializer #########################################       
 class CompleteProfileSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True, required=True)
+    password = serializers.CharField(
+        max_length=255, style={'input_type': 'password'}, write_only=True, required=True
+    )
+    username = serializers.CharField(max_length=255, required=True)
+    email = serializers.EmailField(read_only=True)
 
     class Meta:
-        model = CustomUser 
+        model = CustomUser
         fields = ['username', 'password', 'email']
 
     def validate(self, attrs):
-        token = self.context['request'].COOKIES.get("token")
-        email = Util.get_email_from_token(token)
+        token = self.context['request'].COOKIES.get('token')
+        email = self._get_email_from_token(token)
 
         if email is None:
-            raise serializers.ValidationError("Invalid token.")
+            raise serializers.ValidationError({'token': 'Invalid token.'})
+
         password = attrs.get('password')
         try:
             PASSWORD_POLICY.test(password)
         except PASSWORD_POLICY.PasswordPolicyError as e:
-            raise serializers.ValidationError(e)
+            raise serializers.ValidationError({'password': str(e)})
+
         attrs['email'] = email
         return attrs
 
@@ -125,3 +137,16 @@ class CompleteProfileSerializer(serializers.ModelSerializer):
             return CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
             raise serializers.ValidationError({'email': 'User with this email does not exist.'})
+
+    def _get_email_from_token(self, token: str) -> str:
+        access_token = AccessToken(token)
+        access_token.verify()
+        payload = access_token.payload
+        if (
+            payload['scope'] != 'welcome'
+            or payload['iss'] != 'micros/sign-in'
+            or payload['redirectType'] != 'signup'
+        ):
+            raise Exception('Invalid token')
+        return access_token['sub']
+
