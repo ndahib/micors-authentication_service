@@ -29,7 +29,6 @@ class PasswordResetConfirmView(APIView):
 
     def get(self, request, uidb64, token):
         try:
-            print("------------->>",request.data)
             user_id = force_str(urlsafe_base64_decode(uidb64))
             user = CustomUser.objects.get(id=user_id)
             
@@ -48,7 +47,6 @@ class PasswordResetConfirmView(APIView):
                 {"error": "Token is not valid, please request a new one"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-        
 
 ############################################ Password Reset Set New Password View ########################################
 class SetNewPasswordView(generics.GenericAPIView):

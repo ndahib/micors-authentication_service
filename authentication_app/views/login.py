@@ -11,20 +11,27 @@ class LoginView(generics.GenericAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user_data = serializer.validated_data
-        response = Response({"message": "Login successful",
-                            "username": user_data["username"],
-                            "email": user_data["email"],
-                            "refresh": user_data["refresh"]}, status=status.HTTP_200_OK)
+        validated_data = serializer.validated_data
+        response = Response(
+            {
+                "message": "Login successful",
+                "username": validated_data["username"],
+                "email": validated_data["email"],
+                "refresh": validated_data["tokens"]["access"],
+            },
+            status=status.HTTP_200_OK,
+        )
         response.set_cookie(
-            key="token",
-            value=str(user_data["access"]),
+            key="r_token",
+            value=str(validated_data["tokens"]["refresh"]), 
             httponly=True,
             secure=True,
             samesite="Strict",
             max_age=1800,
             expires=1800,
-            path="/",
-            domain="localhost",
+            path="/login",
+            domain="127.0.0.1",
         )
         return response
+
+

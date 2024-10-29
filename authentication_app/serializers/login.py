@@ -34,5 +34,5 @@ class LoginSerializer(TokenObtainPairSerializer):
         return {
             'email': user.email,
             'username': user.username,
-            'tokens': user.token()
+            'tokens': user.tokens()
         }

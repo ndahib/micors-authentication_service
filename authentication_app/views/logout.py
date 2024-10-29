@@ -1,22 +1,27 @@
 ##############################Imports########################################
 from rest_framework import status
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from ..serializers.logout import TokenSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 ####################################Logout###################################
+
 class LogoutView(APIView):
-    def get(self, request):
-        try:
-            refresh_token = request.headers.get("Authorization")
-            print(refresh_token)
-            if refresh_token is None:
-                return Response({"error": "Token is required"}, status=status.HTTP_400_BAD_REQUEST)
-            token = RefreshToken(refresh_token)
-            if not token.check_blacklist():
-                token.blacklist()
-            else:
-                return Response({"error": "Token is invalid"}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"message": "Logout Successful"}, status=status.HTTP_205_RESET_CONTENT)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        serializer = TokenSerializer(data={
+            'refresh_token': request.COOKIES.get('token'),
+            'access_token': request.data.get('access')
+        })
+        
+        if not serializer.is_valid():
+            print(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        print(serializer.validated_data['refresh_token'])
+        refresh_token = RefreshToken(serializer.validated_data['refresh_token'])
+        refresh_token.blacklist()
+
+        response = Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+        response.set_cookie("token", "", httponly=True, secure=True, samesite="Lax", max_age=0, expires=0)
+        return response

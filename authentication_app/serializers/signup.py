@@ -67,7 +67,8 @@ class EmailVerificationSerializer(serializers.Serializer):
             email = payload.get("sub")
             user = CustomUser.objects.filter(email=email).first()
             if user and user.is_verified:
-                raise serializers.ValidationError("Verification link is invalid or expired.")
+                raise serializers.ValidationError("User is already verified, Complete your profile.", 
+                                                  code="user_verified")
         except jwt.ExpiredSignatureError:
             raise serializers.ValidationError("Verification link expired.")
         except (jwt.DecodeError, jwt.InvalidTokenError) as e:
@@ -80,7 +81,6 @@ class EmailVerificationSerializer(serializers.Serializer):
         email = validated_data.get("email")
         username = self._generate_username(email)
         user = CustomUser.objects.create_user(username=username, email=email)
-        user.is_complete = True
         user.is_verified = True
         user.save()
 
@@ -127,6 +127,7 @@ class CompleteProfileSerializer(serializers.ModelSerializer):
         user = self._get_user_by_email(validated_data['email'])
         user.set_password(validated_data['password'])
         user.username = validated_data['username']
+        user.is_complete = True
         user.save()
         return user
 

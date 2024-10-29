@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from rest_framework.response import Response
 from ..serializers.signup import EmailVerificationSerializer, SignUpSerializer, CompleteProfileSerializer
 from rest_framework_simplejwt.tokens import AccessToken
-
+from rest_framework.serializers import ValidationError
 
 #################################### Sign Up View ########################################
 class SignUpView(generics.GenericAPIView):
@@ -35,21 +35,35 @@ class EmailVerificationView(generics.GenericAPIView):
     serializer_class = EmailVerificationSerializer
 
     def get(self, request):
-        query_params = {key: str(value) for key, value in request.query_params.items()}
-        serializer = self.serializer_class(data=query_params)
-        serializer.is_valid(raise_exception=True)
-        user, access_token = serializer.save()
+        user = None
+        access_token = None
+
+        try:
+            query_params = {key: str(value) for key, value in request.query_params.items()}
+            serializer = self.serializer_class(data=query_params)
+            serializer.is_valid(raise_exception=True)
+            user, access_token = serializer.save()
+        except ValidationError as validation_error:
+            if validation_error.default_code == "user_verified":
+                response = Response({"message": validation_error.default_detail}, status=status.HTTP_400_BAD_REQUEST)
+                if user: 
+                    tokens = AccessToken.for_user(user)
+                    response.set_cookie("token", str(tokens), httponly=True, secure=True, samesite="Lax")
+                return response
 
         response = Response({"message": "Verification successful."}, status=status.HTTP_200_OK)
-        response.set_cookie(
-            key='token',
-            value=str(access_token),
-            httponly=True,
-            secure=True,
-            samesite='Strict'
-        )
+        
+        if access_token: 
+            response.set_cookie(
+                key='token',
+                value=str(access_token),
+                httponly=True,
+                secure=True,
+                samesite='Strict'
+            )
+
         response['Location'] = os.environ.get("WELCOME_FRONTEND_URL")
-        response.status_code = 302
+        response.status_code = status.HTTP_302_FOUND
         return response
 
 
@@ -70,5 +84,5 @@ class CompleteProfileView(APIView):
         response = Response({"message": "Profile completed successfully", 
                             "refresh": tokens["refresh"]},
                             status=status.HTTP_200_OK)
-        response.set_cookie("access", tokens["access"], httponly=True, secure=True, samesite="Lax")
+        response.set_cookie("token", tokens["refresh"], httponly=True, secure=True, samesite="Lax")
         return response
