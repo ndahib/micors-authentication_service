@@ -2,6 +2,8 @@
 from django.urls import path, re_path
 from .views.signup import SignUpView , EmailVerificationView, CompleteProfileView
 from .views.reset_password import PasswordResetView, PasswordResetConfirmView, SetNewPasswordView
+from .views.login import LoginView
+from .views.logout import LogoutView
 
 urlpatterns = [
     re_path(r'^signup$', SignUpView.as_view(), name='signup'),
@@ -13,6 +15,7 @@ urlpatterns = [
     path("set-new-password", SetNewPasswordView.as_view(), name="set-new-password"),
 
 
-    re_path(r'^login$', PasswordResetView.as_view(), name="reset-password"),
+    re_path(r'^login$', LoginView.as_view(), name="reset-password"),
+    re_path(r'^logout$', LogoutView.as_view(), name="reset-password"),
 
 ]

@@ -18,7 +18,10 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         fields = ['email']
     
     def create(self, validated_data):
-        user = CustomUser.objects.get(email=validated_data['email'])
+        try:
+            user = CustomUser.objects.get(email=validated_data['email'])
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError({'email': 'User with this email does not exist.'})
         uidb64 = urlsafe_base64_encode(force_bytes(user.id))
         token = PasswordResetTokenGenerator().make_token(user)
         relativeLink = reverse('password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
