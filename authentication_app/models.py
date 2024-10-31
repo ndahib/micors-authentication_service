@@ -9,6 +9,7 @@ class CustomUserManger(BaseUserManager):
     """UserManager Model for Authentication App"""
 
     def create_user(self, username, email, password=None):
+    
         """Create and save a User with the given email and password."""
         if username is None:
             raise ValueError("The given username must be set")

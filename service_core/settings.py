@@ -9,7 +9,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "www.google.com"]
 AUTH_USER_MODEL = "authentication_app.CustomUser"
 
 INSTALLED_APPS = [
@@ -20,18 +20,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    
-    'authentication_app',
-]
+    'authlib',
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
+    'authentication_app',
+    'social_authentication',
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -79,11 +76,11 @@ DATABASES = {
 from password_strength import PasswordPolicy
 
 PASSWORD_POLICY = PasswordPolicy.from_names(
-    length=8,  # min length: 8
-    uppercase=1,  # need min. 1 uppercase
-    numbers=1,  # need min. 1 number
-    special=0,  # need min. 1 special character
-    strength=(0.33, 30),  # min. 0.33 strength
+    length=8,
+    uppercase=1,
+    numbers=1,
+    special=0,
+    strength=(0.33, 30),
 )
 
 
@@ -92,7 +89,7 @@ PASSWORD_POLICY = PasswordPolicy.from_names(
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'GMT'
 
 USE_I18N = True
 
@@ -120,3 +117,31 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
+
+
+#####################SOCIAL_AUTH_VARIABLES######################
+GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID')
+GOOGLE_OAUTH2_SECRET_KEY = os.environ.get('GOOGLE_OAUTH2_SECRET_KEY')
+GOOGLE_OAUTH2_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH2_REDIRECT_URI')
+GOOGLE_OAUTH2_CLIENT_SECRET_JSON = os.environ.get('GOOGLE_CLIENT_SECRET_JSON')
+DEFAULT_PASSWORD = os.environ.get('DEFAULT_PASSWORD')
+
+
+#######################Session Settings########################
+SESSION_COOKIE_AGE = 1200
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+
+
+########################42 Authentication########################
+
+AUTHLIB_OAUTH_CLIENTS = {
+    '42': {
+        'client_id': os.environ.get("INTRA_OAUTH2_CLIENT_ID"),
+        'client_secret': os.environ.get("INTRA_OAUTH2_SECRET_KEY"),
+        'api_base_url': os.environ.get("INTRA_API_BASE_URL"),
+        'access_token_url': os.environ.get("INTRA_API_TOKEN_URL"),
+        'authorize_url': os.environ.get("INTRA_API_AUTHORIZE_URL"),
+        "redirect_uri": os.environ.get("INTRA_OAUTH2_REDIRECT_URI"),
+    },
+}
