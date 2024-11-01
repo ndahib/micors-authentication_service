@@ -1,10 +1,9 @@
 import os
 import jwt
+import requests
 from django.urls import reverse
-from django.core.mail import EmailMessage
 from django.contrib.sites.shortcuts import get_current_site
 from datetime import datetime, timedelta
-from rest_framework_simplejwt.tokens import AccessToken
 from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
@@ -43,7 +42,23 @@ class Util:
         }
         token = Util.generate_token(payload=payload)
         Util.create_email_data(request, email, token)
-    
+
+    @staticmethod
+    def create_user_profile(user):
+        api_url = os.environ.get("API_URL")
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        payload = {
+            "username": user.username, 
+        }
+        response = requests.post(api_url + "/profile/", json=payload, headers=headers)
+
+        if response.status_code == 201:
+            return True
+        else:
+            return False
+
 
 
 

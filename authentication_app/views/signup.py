@@ -81,6 +81,8 @@ class CompleteProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         tokens = user.tokens()
+        if Util.create_user_profile(user) is False:
+            return Response({"message": "Error creating user profile"}, status=status.HTTP_400_BAD_REQUEST)
         response = Response({"message": "Profile completed successfully", 
                             "refresh": tokens["refresh"]},
                             status=status.HTTP_200_OK)
