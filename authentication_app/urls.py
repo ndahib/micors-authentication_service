@@ -4,18 +4,31 @@ from .views.signup import SignUpView , EmailVerificationView, CompleteProfileVie
 from .views.reset_password import PasswordResetView, PasswordResetConfirmView, SetNewPasswordView
 from .views.login import LoginView
 from .views.logout import LogoutView
+from .views.twoFA import Enable2FaView, Disable2FaView, CodeQrGenerator, Verify2FaView
 
 urlpatterns = [
+    # Sign Up
     re_path(r'^signup$', SignUpView.as_view(), name='signup'),
     path('signup/verify', EmailVerificationView.as_view(), name='email-verify'),
     path('signup/complete', CompleteProfileView.as_view(), name='complete_profile'),
 
+    # Reset Password
     re_path(r'^reset$', PasswordResetView.as_view(), name="reset-password"),
     path("password-reset/<uidb64>/<token>/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
     path("set-new-password", SetNewPasswordView.as_view(), name="set-new-password"),
 
 
+    # Login
     re_path(r'^login$', LoginView.as_view(), name="reset-password"),
     re_path(r'^logout$', LogoutView.as_view(), name="reset-password"),
 
+    # Enable 2Fa and Disable 2Fa
+    path('2fa/enable', Enable2FaView.as_view(), name="enable-2fa"),
+    path('2fa/disable', Disable2FaView.as_view(), name="disable-2fa"),
+
+    # Generating QR code for 2FA
+    path('2fa/qr', CodeQrGenerator.as_view(), name="qr-code-2fa"),
+
+    # verifying 2FA
+    path('2fa/verify', Verify2FaView.as_view(), name="verify-2fa"),
 ]

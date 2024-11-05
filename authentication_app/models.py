@@ -40,6 +40,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     auth_provider = models.CharField(max_length=255, blank=False, null=False, default="email")
     is_complete = models.BooleanField(default=False)
+    is_2fa_enabled  = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
@@ -62,3 +63,8 @@ class CustomUser(AbstractUser, PermissionsMixin):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         }
+    
+    # def generate_2fa_secret
+
+
+    # def verify_2fa_token
