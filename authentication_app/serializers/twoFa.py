@@ -31,6 +31,8 @@ class TwoFaSerializer(serializers.Serializer):
 
 
 from django_otp.plugins.otp_totp.models import TOTPDevice
+import jwt
+from django.conf import settings
 
 class TOTPSerializer(serializers.Serializer):
     """TOTP Serializer for TOTP verification"""
@@ -39,10 +41,22 @@ class TOTPSerializer(serializers.Serializer):
     
     def validate(self, attrs):
         totp = attrs.get('totp')
+        jwt_token = self.context['request'].COOKIES.get('token')
         try:
-            user = CustomUser.objects.get(username="ndahib") # to change later with enter user
+            decoded_token  = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=["HS256"])
+            payload = decoded_token.payload
+            email = payload.get('sub')
+            if not email:
+                raise serializers.ValidationError('Invalid credentials')
+            user = CustomUser.objects.get(email=email)
             device =  TOTPDevice.objects.get(user=user, name="Pingo")
         except CustomUser.DoesNotExist:
+            raise serializers.ValidationError('Invalid credentials')
+        except jwt.ExpiredSignatureError:
+            raise serializers.ValidationError('Token expired')
+        except jwt.DecodeError:
+            raise serializers.ValidationError('Invalid token')
+        except TOTPDevice.DoesNotExist:
             raise serializers.ValidationError('Invalid credentials')
         if not device.verify_token(totp):
             raise serializers.ValidationError('Invalid TOTP')

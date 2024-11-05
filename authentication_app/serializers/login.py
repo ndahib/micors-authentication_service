@@ -34,5 +34,6 @@ class LoginSerializer(TokenObtainPairSerializer):
         return {
             'email': user.email,
             'username': user.username,
-            'tokens': user.tokens()
+            'tokens': user.tokens(),
+            'is_2fa_enabled' : user.is_2fa_enabled
         }

@@ -10,6 +10,7 @@ from ..serializers.twoFa import TwoFaSerializer, TOTPSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import BasePermission
+from .utils import Util
  
 class IsAuthenticated(BasePermission):
     def has_permission(self, request, view):
@@ -83,8 +84,14 @@ class Verify2FaView(generics.GenericAPIView):
     serializer_class = TOTPSerializer
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
+        # user is in jwt token 
+        serializer = self.serializer_class(data=request.data, context={"request": request})
         if serializer.is_valid(raise_exception=True) is True:
-            # response = Utils.generate_response()
-            # return response
+            response = Util.build_response(serializer.validated_data)
+            response.set_cookie(
+                key="token", 
+                value="", 
+                max_age=0,
+                expires=0,)
+            return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

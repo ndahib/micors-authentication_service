@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from rest_framework.response import Response
+from rest_framework import status
 
 class Util:
     @staticmethod
@@ -58,7 +60,60 @@ class Util:
             return True
         else:
             return False
+        
+    @staticmethod
+    def build_response(validated_data):
+        response = Response(
+            {
+                "message": "Login successful",
+                "username": validated_data["username"],
+                "email": validated_data["email"],
+                "refresh": validated_data["tokens"]["access"],
+            },
+            status=status.HTTP_200_OK,
+        )
+        response.set_cookie(
+            key="r_token",
+            value=str(validated_data["tokens"]["refresh"]), 
+            httponly=True,
+            secure=True,
+            samesite="Strict",
+            max_age=1800,
+            expires=1800,
+            path="/login",
+            domain="127.0.0.1",
+        )
+        return response
 
+    @staticmethod
+    def build_2fa_response(validated_data):
+        response = Response(
+            {
+                "message": "Provide TOTP code",
+                "email": validated_data["email"],
+            },
+            status=status.HTTP_200_OK,
+        )
+        payload = {
+            "sub": validated_data["email"],
+            'exp': datetime.now() + timedelta(min=10),
+            'iss': "micros/2fa",
+            'scope': '2fa',
+            'redirecType': 'login',
+            'action': "complete login",
+        }
+        jwt_token = jwt.encode(payload=payload, key=os.environ.get("JWT_SECRET"), algorithm="HS256")
+        response.set_cookie(
+            key="token",
+            value=str(jwt_token), 
+            httponly=True,
+            secure=True,
+            samesite="Strict",
+            max_age=1800,
+            expires=1800,
+            path="/login",
+        )
+        return response
 
 
 
@@ -89,4 +144,3 @@ class Util:
         email = EmailMultiAlternatives(subject, plain_message, from_email, [to])
         email.attach_alternative(html_message, "text/html")
         email.send()
-
