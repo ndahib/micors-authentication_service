@@ -68,10 +68,11 @@ class Util:
                 "message": "Login successful",
                 "username": validated_data["username"],
                 "email": validated_data["email"],
-                "refresh": validated_data["tokens"]["access"],
+                "access": validated_data["tokens"]["access"],
             },
             status=status.HTTP_200_OK,
         )
+        print("----------->>", validated_data["tokens"]["access"])
         response.set_cookie(
             key="r_token",
             value=str(validated_data["tokens"]["refresh"]), 
@@ -80,7 +81,7 @@ class Util:
             samesite="Strict",
             max_age=1800,
             expires=1800,
-            path="/login",
+            path="/auth",
             domain="127.0.0.1",
         )
         return response
@@ -96,7 +97,7 @@ class Util:
         )
         payload = {
             "sub": validated_data["email"],
-            'exp': datetime.now() + timedelta(min=10),
+            'exp': datetime.now() + timedelta(minutes=10),
             'iss': "micros/2fa",
             'scope': '2fa',
             'redirecType': 'login',
@@ -111,7 +112,7 @@ class Util:
             samesite="Strict",
             max_age=1800,
             expires=1800,
-            path="/login",
+            path="/auth"
         )
         return response
 

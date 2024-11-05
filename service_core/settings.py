@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     'authlib',
     'django_otp',
     'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_email'
+
     'qrcode',
     'authentication_app',
     'social_authentication',
@@ -112,7 +114,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = 'static/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # for debug
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # for deploy
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587

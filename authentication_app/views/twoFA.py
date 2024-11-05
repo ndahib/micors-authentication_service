@@ -1,24 +1,22 @@
 import qrcode
 import base64
 from io import BytesIO
+from .utils import Util
 from ..models import CustomUser
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from ..serializers.twoFa import TwoFaSerializer, TOTPSerializer
-from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import BasePermission
-from .utils import Util
- 
-class IsAuthenticated(BasePermission):
-    def has_permission(self, request, view):
-        return True # to change later with verified token and not expired token
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from ..serializers.twoFa import TwoFaSerializer, TOTPSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 class Enable2FaView(generics.GenericAPIView):
     "" " View for enabling 2FA. """
 
+    authentication_classes = [JWTAuthentication]
     serializer_class = TwoFaSerializer
     permission_classes = [IsAuthenticated]
 
@@ -37,12 +35,12 @@ class Enable2FaView(generics.GenericAPIView):
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
-        
+   
 class Disable2FaView(generics.GenericAPIView):
     """ View for disabling 2FA. """
 
     serializer_class = TwoFaSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -86,12 +84,13 @@ class Verify2FaView(generics.GenericAPIView):
     def post(self, request):
         # user is in jwt token 
         serializer = self.serializer_class(data=request.data, context={"request": request})
-        if serializer.is_valid(raise_exception=True) is True:
+        if serializer.is_valid(raise_exception=True):
             response = Util.build_response(serializer.validated_data)
+            print(response)
             response.set_cookie(
                 key="token", 
                 value="", 
                 max_age=0,
                 expires=0,)
             return response
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
