@@ -26,14 +26,15 @@ class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         email= attrs.get('email', '')
         password = attrs.get('password', '')
-        user = authenticate(email=email, password=password)
-        if not user:
-            raise AuthenticationFailed('Invalid credentials')
+        user = CustomUser.objects.filter(email=email).first()
+        # if not user or not user.check_password(password): # to change later 
+        #     raise AuthenticationFailed('Invalid credentials')
         if not user.is_verified:
             raise AuthenticationFailed('Email is not verified')
         return {
             'email': user.email,
             'username': user.username,
             'tokens': user.tokens(),
-            'is_2fa_enabled' : user.is_2fa_enabled
+            'is_2fa_enabled' : user.is_2fa_enabled,
+            'two_fa_choice' : user.two_fa_choice
         }

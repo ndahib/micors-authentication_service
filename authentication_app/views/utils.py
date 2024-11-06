@@ -8,7 +8,9 @@ from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from rest_framework.response import Response
+from django_otp.plugins.otp_email.models import EmailDevice
 from rest_framework import status
+from ..models import CustomUser
 
 class Util:
     @staticmethod
@@ -72,7 +74,6 @@ class Util:
             },
             status=status.HTTP_200_OK,
         )
-        print("----------->>", validated_data["tokens"]["access"])
         response.set_cookie(
             key="r_token",
             value=str(validated_data["tokens"]["refresh"]), 
@@ -88,6 +89,13 @@ class Util:
 
     @staticmethod
     def build_2fa_response(validated_data):
+        print(validated_data)
+        if validated_data["two_fa_choice"] == "email":
+            print("enter here-->>")
+            user = CustomUser.objects.filter(email=validated_data["email"]).first()
+            device = EmailDevice.objects.get(user=user, name="Pingo")
+            device.generate_challenge()
+            
         response = Response(
             {
                 "message": "Provide TOTP code",
@@ -115,7 +123,6 @@ class Util:
             path="/auth"
         )
         return response
-
 
 
     #     @staticmethod

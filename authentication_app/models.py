@@ -4,6 +4,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
 from datetime import datetime, timedelta
 import secrets
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 class CustomUserManger(BaseUserManager):
     """UserManager Model for Authentication App"""
@@ -29,10 +31,17 @@ class CustomUserManger(BaseUserManager):
         user.save()
         return user
 
-
 class CustomUser(AbstractUser, PermissionsMixin):
+    TWO_FA_TYPE = [
+        ('totp', 'TOTP'),
+        ('email', 'Email'),
+        # ('sms', 'SMS'), # not implemented yet, maybe later
+    ]
+
+
     username=models.CharField(max_length=255, unique=True, db_index=True)
     email=models.EmailField(unique=True, db_index=True)
+
     is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -40,8 +49,10 @@ class CustomUser(AbstractUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     auth_provider = models.CharField(max_length=255, blank=False, null=False, default="email")
     is_complete = models.BooleanField(default=False)
-    is_2fa_enabled  = models.BooleanField(default=False)
 
+    is_2fa_enabled  = models.BooleanField(default=False)
+    two_fa_choice = models.CharField(max_length=255, blank=True, choices=TWO_FA_TYPE)
+    
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
     objects = CustomUserManger()
@@ -63,8 +74,4 @@ class CustomUser(AbstractUser, PermissionsMixin):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         }
-    
-    # def generate_2fa_secret
 
-
-    # def verify_2fa_token

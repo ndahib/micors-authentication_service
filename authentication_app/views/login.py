@@ -18,5 +18,3 @@ class LoginView(generics.GenericAPIView):
         else:
             response = Util.build_response(validated_data)
         return response
-
-

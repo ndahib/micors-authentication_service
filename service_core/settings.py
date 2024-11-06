@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'authlib',
     'django_otp',
     'django_otp.plugins.otp_totp',
-    'django_otp.plugins.otp_email'
+    'django_otp.plugins.otp_email',
 
     'qrcode',
     'authentication_app',
@@ -114,8 +114,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = 'static/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # for debug
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # for deploy
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # for debug
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # for deploy
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
@@ -151,3 +151,9 @@ AUTHLIB_OAUTH_CLIENTS = {
         "redirect_uri": os.environ.get("INTRA_OAUTH2_REDIRECT_URI"),
     },
 }
+
+
+########################## OTP settings for email########################
+OTP_EMAIL_SENDER        = os.environ.get('OTP_EMAIL_SENDER')
+OTP_EMAIL_SUBJECT       = os.environ.get('OTP_EMAIL_SUBJECT')
+OTP_EMAIL_TOKEN_VALIDIT =  os.environ.get('OTP_EMAIL_TOKEN_VALIDITY')

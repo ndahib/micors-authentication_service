@@ -77,14 +77,15 @@ class CompleteProfileView(APIView):
     @is_verified
     def post(self, request) -> Response:
         """Handles the POST request to complete a user's profile."""
+
         serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         tokens = user.tokens()
-        if Util.create_user_profile(user) is False:
-            return Response({"message": "Error creating user profile"}, status=status.HTTP_400_BAD_REQUEST)
+        # if Util.create_user_profile(user) is False:
+        #     return Response({"message": "Error creating user profile"}, status=status.HTTP_400_BAD_REQUEST) # to change later
         response = Response({"message": "Profile completed successfully", 
-                            "refresh": tokens["refresh"]},
+                            "a_token": tokens["access"],},
                             status=status.HTTP_200_OK)
-        response.set_cookie("token", tokens["refresh"], httponly=True, secure=True, samesite="Lax")
+        response.set_cookie("r_token", tokens["refresh"], httponly=True, secure=True, samesite="Lax")
         return response
