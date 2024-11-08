@@ -65,7 +65,6 @@ TEMPLATES = [
 
 ASGI_APPLICATION = 'service_core.asgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -157,3 +156,11 @@ AUTHLIB_OAUTH_CLIENTS = {
 OTP_EMAIL_SENDER        = os.environ.get('OTP_EMAIL_SENDER')
 OTP_EMAIL_SUBJECT       = os.environ.get('OTP_EMAIL_SUBJECT')
 OTP_EMAIL_TOKEN_VALIDIT =  os.environ.get('OTP_EMAIL_TOKEN_VALIDITY')
+
+
+######################### Simple jwt settings ########################
+# SIMPLE_JWT = {
+#     # 'ROTATE_REFRESH_TOKENS': True,
+#     'BLACKLIST_AFTER_ROTATION': True,
+#     "CHECK_REVOKE_TOKEN": True,
+# }

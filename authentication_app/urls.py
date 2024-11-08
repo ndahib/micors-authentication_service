@@ -1,10 +1,13 @@
 
 from django.urls import path, re_path
-from .views.signup import SignUpView , EmailVerificationView, CompleteProfileView
-from .views.reset_password import PasswordResetView, PasswordResetConfirmView, SetNewPasswordView
 from .views.login import LoginView
 from .views.logout import LogoutView
+from .views.tokenRefresh import TokenRefreshView
+from .views.change_password import ChangePasswordView
+from .views.signup import SignUpView , EmailVerificationView, CompleteProfileView
+from .views.reset_password import PasswordResetView, PasswordResetConfirmView, SetNewPasswordView
 from .views.twoFA import Enable2FaView, Disable2FaView, CodeQrGenerator, Verify2FaView
+
 
 urlpatterns = [
     # Sign Up
@@ -31,4 +34,12 @@ urlpatterns = [
 
     # verifying 2FA
     path('2fa/verify', Verify2FaView.as_view(), name="verify-2fa"),
+
+
+    # Change Password
+    re_path(r'^change-password$', ChangePasswordView.as_view(), name="change-password"),
+
+
+    # Get Access Token
+    re_path(r'^get-token$', TokenRefreshView.as_view(), name="get-token"),
 ]

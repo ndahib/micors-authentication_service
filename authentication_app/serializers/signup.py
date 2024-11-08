@@ -2,13 +2,13 @@ import re
 import os
 import jwt
 import random
-from datetime import datetime
 from django.utils.text import slugify
 from rest_framework import serializers
+from datetime import datetime, timedelta
 from authentication_app.models import CustomUser
 from service_core.settings import PASSWORD_POLICY
 from rest_framework_simplejwt.tokens import AccessToken
-from datetime import datetime, timedelta
+
 ######################################Sign Up Serializer########################################
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -25,7 +25,8 @@ class SignUpSerializer(serializers.Serializer):
         is_exist = user.exists()
         if is_exist and user.get().is_complete:
             raise serializers.ValidationError('User already exists and is complete')
-        return super().validate(attrs)
+        # user exists verified but not complete
+        return super().validate(attrs) # to chang le 
 
     def create(self, validated_data):
         return CustomUser.objects.create_user(**validated_data)
@@ -64,7 +65,10 @@ class EmailVerificationSerializer(serializers.Serializer):
             ):
                 raise serializers.ValidationError("Verification link is invalid or expired.")
 
-            email = payload.get("sub")
+            try:
+                email = payload.get("sub")
+            except (jwt.DecodeError, jwt.InvalidTokenError) as e:
+                raise serializers.ValidationError("Verification link is invalid.")
             user = CustomUser.objects.filter(email=email).first()
             if user and user.is_verified:
                 raise serializers.ValidationError("User is already verified, Complete your profile.", 

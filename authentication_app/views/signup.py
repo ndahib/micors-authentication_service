@@ -4,11 +4,10 @@ from rest_framework import status
 from .decorators import is_verified
 from rest_framework import generics
 from rest_framework.views import APIView
-from datetime import datetime, timedelta
 from rest_framework.response import Response
-from ..serializers.signup import EmailVerificationSerializer, SignUpSerializer, CompleteProfileSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.serializers import ValidationError
+from ..serializers.signup import EmailVerificationSerializer, SignUpSerializer, CompleteProfileSerializer
 
 #################################### Sign Up View ########################################
 class SignUpView(generics.GenericAPIView):

@@ -27,8 +27,8 @@ class LoginSerializer(TokenObtainPairSerializer):
         email= attrs.get('email', '')
         password = attrs.get('password', '')
         user = CustomUser.objects.filter(email=email).first()
-        # if not user or not user.check_password(password): # to change later 
-        #     raise AuthenticationFailed('Invalid credentials')
+        if not user or not user.check_password(password):
+            raise AuthenticationFailed('Invalid credentials')
         if not user.is_verified:
             raise AuthenticationFailed('Email is not verified')
         return {

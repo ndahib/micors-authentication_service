@@ -12,6 +12,7 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from ..serializers.twoFa import TwoFASerializer, Verify2faSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django_otp.plugins.otp_email.models import EmailDevice
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class Enable2FaView(generics.GenericAPIView):
     """View for enabling 2FA."""

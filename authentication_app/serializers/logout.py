@@ -1,16 +1,18 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.settings import api_settings
 
 ######################Refresh Token ##################################
 class TokenSerializer(serializers.Serializer):
-    refresh_token = serializers.CharField(required=True)
-    access_token = serializers.CharField(required=True)
 
     def validate(self, data):
         try:
-            RefreshToken(data['refresh_token'], verify=True)
-            AccessToken(data['access_token'], verify=True)
+            refresh_token = self.context["request"].COOKIES.get('r_token')
+            if refresh_token is None:
+                raise serializers.ValidationError({"message": "Refresh token not found in cookies"})
+            token = RefreshToken(refresh_token, verify=True)
+            token.check_exp()
+            token.blacklist()
         except Exception as error:
             raise serializers.ValidationError({"message": str(error)})
         return data

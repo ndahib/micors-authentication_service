@@ -22,7 +22,9 @@ class TwoFASerializer(serializers.Serializer):
         password = attrs.get('password')
         print("----->", password)
         choice = attrs.get('choice')
+        print("------->>", choice)
         user = self.context['request'].user
+        print("-------- >>", user)
         to_enable = self.context['toEnable']
         attrs = {
             'instance': user,
@@ -31,13 +33,14 @@ class TwoFASerializer(serializers.Serializer):
 
         if choice not in ["email", "totp"]:
             raise serializers.ValidationError('Invalid choice')
-        # if not user.check_password(password):
-        #     raise serializers.ValidationError('Invalid credentials') # to change later
+        if not user.check_password(password):
+            raise serializers.ValidationError('Invalid credentials')
         attrs['choice'] = choice
         device_model = TOTPDevice if choice == self.Meta.model.TWO_FA_TYPE[0] else EmailDevice
-
+        print("device_model====>>>", device_model)
         if to_enable:
-            device, _ = device_model.objects.get_or_create(user=user, name="Pingo")
+            device, _ = device_model.objects.create(user=user, name="Pingo")
+            print("device=====>", device)
             device.save()
             attrs['device'] = device
         else:
@@ -59,7 +62,7 @@ class Verify2faSerializer(serializers.Serializer):
     totp = serializers.CharField(write_only=True)
     
     def validate(self, attrs):
-        totp = attrs.get('otp')
+        totp = attrs.get('totp')
         jwt_token = self.context['request'].COOKIES.get('token')
         try:
             decoded_token  = jwt.decode(jwt_token, key=os.environ.get("JWT_SECRET"), algorithms="HS256")

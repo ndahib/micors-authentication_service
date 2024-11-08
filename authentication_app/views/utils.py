@@ -82,7 +82,7 @@ class Util:
             samesite="Strict",
             max_age=1800,
             expires=1800,
-            path="/auth",
+            path="/", # to change later
             domain="127.0.0.1",
         )
         return response
@@ -151,4 +151,4 @@ class Util:
         to = email
         email = EmailMultiAlternatives(subject, plain_message, from_email, [to])
         email.attach_alternative(html_message, "text/html")
-        email.send()
+        email.send() 
