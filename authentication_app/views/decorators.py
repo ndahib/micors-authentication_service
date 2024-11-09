@@ -46,9 +46,6 @@ def is_verified(view_func):
             user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
             return HttpResponseForbidden("Access denied: user not found.")
-
-        if not user.is_verified:
-            return HttpResponseForbidden("Access denied: not verified yet.")
         
         return view_func(self, request, *args, **kwargs)
 

@@ -1,7 +1,6 @@
 from ..serializers.login import LoginSerializer
 from .utils import Util
-from  rest_framework import generics, status
-from rest_framework.response import Response
+from  rest_framework import generics
 #################################Login###################################
 class LoginView(generics.GenericAPIView):
     """View for user login that takes email and password and returns 

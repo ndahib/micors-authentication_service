@@ -2,7 +2,6 @@
 ####################################Login###################################
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
 from ..models import CustomUser
 
@@ -29,8 +28,6 @@ class LoginSerializer(TokenObtainPairSerializer):
         user = CustomUser.objects.filter(email=email).first()
         if not user or not user.check_password(password):
             raise AuthenticationFailed('Invalid credentials')
-        if not user.is_verified:
-            raise AuthenticationFailed('Email is not verified')
         return {
             'email': user.email,
             'username': user.username,

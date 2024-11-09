@@ -20,11 +20,8 @@ class TwoFASerializer(serializers.Serializer):
 
     def validate(self, attrs):
         password = attrs.get('password')
-        print("----->", password)
         choice = attrs.get('choice')
-        print("------->>", choice)
         user = self.context['request'].user
-        print("-------- >>", user)
         to_enable = self.context['toEnable']
         attrs = {
             'instance': user,
@@ -36,15 +33,15 @@ class TwoFASerializer(serializers.Serializer):
         if not user.check_password(password):
             raise serializers.ValidationError('Invalid credentials')
         attrs['choice'] = choice
-        device_model = TOTPDevice if choice == self.Meta.model.TWO_FA_TYPE[0] else EmailDevice
-        print("device_model====>>>", device_model)
+        device_model = TOTPDevice if choice == "totp" else EmailDevice
         if to_enable:
-            device, _ = device_model.objects.create(user=user, name="Pingo")
-            print("device=====>", device)
+            if device_model.objects.devices_for_user(user):
+                device_model.objects.all().delete()
+            device = device_model.objects.create(user=user, name="Pingo")
             device.save()
             attrs['device'] = device
         else:
-            device_model.objects.filter(user=user).delete()
+            device_model.objects.filter(user=user, name="Pingo").delete()
 
         return attrs
 

@@ -158,9 +158,13 @@ OTP_EMAIL_SUBJECT       = os.environ.get('OTP_EMAIL_SUBJECT')
 OTP_EMAIL_TOKEN_VALIDIT =  os.environ.get('OTP_EMAIL_TOKEN_VALIDITY')
 
 
+from  datetime import timedelta
 ######################### Simple jwt settings ########################
-# SIMPLE_JWT = {
-#     # 'ROTATE_REFRESH_TOKENS': True,
-#     'BLACKLIST_AFTER_ROTATION': True,
-#     "CHECK_REVOKE_TOKEN": True,
-# }
+SIMPLE_JWT = {
+    # 'ROTATE_REFRESH_TOKENS': True,
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # 'BLACKLIST_AFTER_ROTATION': True,
+    # "CHECK_REVOKE_TOKEN": True,
+    # add setting for Secret Key
+}

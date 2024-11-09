@@ -12,7 +12,6 @@ class ChangePasswordSerializer(serializers.Serializer):
         old_password = attrs.get('old_password')
         new_password = attrs.get('new_password')
         user = self.context['request'].user
-        print("------------>>", self.instance)
         if not user.check_password(old_password):
             raise serializers.ValidationError('Invalid credentials')
         try:

@@ -24,7 +24,6 @@ class RegisterWithProviderSerializer:
         user, created = CustomUser.objects.get_or_create(
             email=validated_data["email"],
             defaults={
-                "is_verified": True,
                 "auth_provider": validated_data["provider"],
             },
         )

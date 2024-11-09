@@ -11,8 +11,6 @@ from rest_framework.permissions import IsAuthenticated
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from ..serializers.twoFa import TwoFASerializer, Verify2faSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django_otp.plugins.otp_email.models import EmailDevice
-from rest_framework_simplejwt.tokens import RefreshToken
 
 class Enable2FaView(generics.GenericAPIView):
     """View for enabling 2FA."""
@@ -73,7 +71,9 @@ class CodeQrGenerator(APIView):
             return Response({"message": "2FA not enabled"}, status=status.HTTP_400_BAD_REQUEST)
         if user.two_fa_choice != "totp":
             return Response({"message": "2FA with email enabled"}, status=status.HTTP_400_BAD_REQUEST)
-        device = TOTPDevice.objects.get(user=user, name="Pingo")
+        if not TOTPDevice.objects.devices_for_user(user):
+            return Response({"message": "2FA with totp not enabled"}, status=status.HTTP_400_BAD_REQUEST)
+        device = TOTPDevice.objects.filter(user=user, name="Pingo").first()
         otp_uri = device.config_url
 
         qr = qrcode.make(otp_uri)
@@ -101,4 +101,4 @@ class Verify2FaView(generics.GenericAPIView):
                 max_age=0,
                 expires=0,)
             return response
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

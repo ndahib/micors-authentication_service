@@ -89,16 +89,14 @@ class Util:
 
     @staticmethod
     def build_2fa_response(validated_data):
-        print(validated_data)
         if validated_data["two_fa_choice"] == "email":
-            print("enter here-->>")
             user = CustomUser.objects.filter(email=validated_data["email"]).first()
             device = EmailDevice.objects.get(user=user, name="Pingo")
             device.generate_challenge()
             
         response = Response(
             {
-                "message": "Provide TOTP code",
+                "message": "Provide OTP code",
                 "email": validated_data["email"],
             },
             status=status.HTTP_200_OK,
@@ -120,14 +118,13 @@ class Util:
             samesite="Strict",
             max_age=1800,
             expires=1800,
-            path="/auth"
+            path="" # to change later / page of 2fa to provide totp code
         )
         return response
 
 
     #     @staticmethod
-    # # change the name of this function and genrate it with reset password
-    # def create_email_data(request, email, token):
+    #def create_email_data(request, email, token):
     #     current_site = get_current_site(request)
     #     relativeLink = reverse("email-verify")
     #     port = ":"+str(request.META.get('SERVER_PORT'))
