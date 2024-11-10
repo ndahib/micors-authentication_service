@@ -82,7 +82,7 @@ class Util:
             samesite="Strict",
             max_age=1800,
             expires=1800,
-            path="/", # to change later
+            path=os.environ.get("REFRESH_TOKEN_PATH "),
             domain="127.0.0.1",
         )
         return response
@@ -118,7 +118,7 @@ class Util:
             samesite="Strict",
             max_age=1800,
             expires=1800,
-            path="" # to change later / page of 2fa to provide totp code
+            path=os.environ.get("2FA_TOKEN_PATH"),
         )
         return response
 

@@ -1,5 +1,5 @@
 
-from django.urls import path, re_path
+from django.urls import path
 from .views.login import LoginView
 from .views.logout import LogoutView
 from .views.tokenRefresh import TokenRefreshView
@@ -11,19 +11,18 @@ from .views.twoFA import Enable2FaView, Disable2FaView, CodeQrGenerator, Verify2
 
 urlpatterns = [
     # Sign Up
-    re_path(r'^signup$', SignUpView.as_view(), name='signup'),
+    path('signup', SignUpView.as_view(), name='signup'),
     path('signup/verify', EmailVerificationView.as_view(), name='email-verify'),
     path('signup/complete', CompleteProfileView.as_view(), name='complete_profile'),
 
     # Reset Password
-    re_path(r'^reset$', PasswordResetView.as_view(), name="reset-password"),
+    path('reset', PasswordResetView.as_view(), name="reset-password"),
     path("password-reset/<uidb64>/<token>/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
     path("set-new-password", SetNewPasswordView.as_view(), name="set-new-password"),
 
-
     # Login
-    re_path(r'^login$', LoginView.as_view(), name="reset-password"),
-    re_path(r'^logout$', LogoutView.as_view(), name="reset-password"),
+    path('login', LoginView.as_view(), name="reset-password"),
+    path('logout', LogoutView.as_view(), name="reset-password"),
 
     # Enable 2Fa and Disable 2Fa
     path('2fa/enable', Enable2FaView.as_view(), name="enable-2fa"),
@@ -37,9 +36,9 @@ urlpatterns = [
 
 
     # Change Password
-    re_path(r'^change-password$', ChangePasswordView.as_view(), name="change-password"),
+    path('change-password', ChangePasswordView.as_view(), name="change-password"),
 
 
     # Get Access Token
-    re_path(r'^get-token$', TokenRefreshView.as_view(), name="get-token"),
+    path('get-token', TokenRefreshView.as_view(), name="get-token"),
 ]

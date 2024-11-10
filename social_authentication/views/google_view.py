@@ -41,7 +41,7 @@ class GoogleSocialAuthCallback(APIView):
             flow.fetch_token(code=authorization_code)
             credentials = flow.credentials
             id_token_info = id_token.verify_oauth2_token(
-                credentials.id_token, 
+                credentials.id_token,
                 requests.Request()
             )
             if "accounts.google.com" in id_token_info["iss"]:

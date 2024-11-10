@@ -1,0 +1,40 @@
+[2024-11-10 10:34:19 +0100] [56672] [INFO] Starting gunicorn 23.0.0
+[2024-11-10 10:34:19 +0100] [56672] [INFO] Listening at: http://127.0.0.1:8000 (56672)
+[2024-11-10 10:34:19 +0100] [56672] [INFO] Using worker: sync
+[2024-11-10 10:34:19 +0100] [56673] [INFO] Booting worker with pid: 56673
+[2024-11-10 10:34:19 +0100] [56673] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/goinfre/ndahib/ft_tr/auth_api/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/goinfre/ndahib/ft_tr/auth_api/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/goinfre/ndahib/ft_tr/auth_api/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/goinfre/ndahib/ft_tr/auth_api/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/goinfre/ndahib/ft_tr/auth_api/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/goinfre/ndahib/ft_tr/auth_api/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/goinfre/ndahib/ft_tr/auth_api/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'service_core.wsgi--access-logfile'
+[2024-11-10 10:34:19 +0100] [56673] [INFO] Worker exiting (pid: 56673)
+[2024-11-10 10:34:19 +0100] [56672] [ERROR] Worker (pid:56673) exited with code 3
+[2024-11-10 10:34:19 +0100] [56672] [ERROR] Shutting down: Master
+[2024-11-10 10:34:19 +0100] [56672] [ERROR] Reason: Worker failed to boot.
+[2024-11-10 10:34:26 +0100] [56764] [INFO] Starting gunicorn 23.0.0
+[2024-11-10 10:34:26 +0100] [56764] [INFO] Listening at: http://127.0.0.1:8000 (56764)
+[2024-11-10 10:34:26 +0100] [56764] [INFO] Using worker: sync
+[2024-11-10 10:34:26 +0100] [56765] [INFO] Booting worker with pid: 56765
+[2024-11-10 10:35:52 +0100] [56764] [INFO] Handling signal: winch
+[2024-11-10 10:38:18 +0100] [56764] [INFO] Handling signal: winch
+[2024-11-10 11:50:49 +0100] [56764] [INFO] Handling signal: winch
+[2024-11-10 11:50:52 +0100] [56764] [INFO] Handling signal: int
+[2024-11-10 10:50:52 +0000] [56765] [INFO] Worker exiting (pid: 56765)
+[2024-11-10 11:50:52 +0100] [56764] [INFO] Shutting down: Master

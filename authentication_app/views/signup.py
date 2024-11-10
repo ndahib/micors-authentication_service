@@ -4,8 +4,6 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.serializers import ValidationError
 from ..serializers.signup import EmailVerificationSerializer, SignUpSerializer, CompleteProfileSerializer
 
 #################################### Sign Up View ########################################
@@ -54,7 +52,7 @@ class EmailVerificationView(generics.GenericAPIView):
                 httponly=True,
                 # secure=True,
                 samesite='Lax',
-                path='/api/signup/complete', # to change later 
+                path=os.environ.get("COMPLETE_URL"),
                 expires= 10 * 60,
                 max_age= 10 * 60
             )

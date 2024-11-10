@@ -71,9 +71,7 @@ class CodeQrGenerator(APIView):
             return Response({"message": "2FA not enabled"}, status=status.HTTP_400_BAD_REQUEST)
         if user.two_fa_choice != "totp":
             return Response({"message": "2FA with email enabled"}, status=status.HTTP_400_BAD_REQUEST)
-        if not TOTPDevice.objects.devices_for_user(user):
-            return Response({"message": "2FA with totp not enabled"}, status=status.HTTP_400_BAD_REQUEST)
-        device = TOTPDevice.objects.filter(user=user, name="Pingo").first()
+        device = TOTPDevice.objects.filter(user=user, name="Pingo").first() # env
         otp_uri = device.config_url
 
         qr = qrcode.make(otp_uri)
